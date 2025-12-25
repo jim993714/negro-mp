@@ -1,0 +1,84 @@
+/**
+ * 常用 Mixins
+ */
+
+// Flex 居中
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flex 垂直居中
+@mixin flex-align-center {
+  display: flex;
+  align-items: center;
+}
+
+// Flex 两端对齐
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Flex 列布局
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// 单行文本省略
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文本省略
+@mixin text-ellipsis-multi($lines: 2) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+  overflow: hidden;
+}
+
+// 安全区域底部
+@mixin safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+// 卡片样式
+@mixin card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+// 按钮重置
+@mixin button-reset {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  
+  &::after {
+    border: none;
+  }
+}
+
+// 渐变按钮
+@mixin gradient-button {
+  @include button-reset;
+  @include flex-center;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 24px;
+  
+  &[disabled] {
+    opacity: 0.7;
+  }
+}
+

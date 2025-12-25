@@ -1,0 +1,274 @@
+// Prisma Schema for 游戏代练平台
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")  // 可选，用于 Prisma Accelerate
+}
+
+// 用户表
+model User {
+  id            String   @id @default(cuid())
+  openid        String   @unique
+  unionid       String?
+  nickname      String   @default("游戏玩家")
+  avatar        String   @default("")
+  phone         String?
+  password      String?  // 密码（可选，用于账号密码登录）
+  role          String   @default("PLAYER") // PLAYER, BOOSTER, ADMIN
+  status        String   @default("ACTIVE") // ACTIVE, BANNED, PENDING
+  balance       Int      @default(0) // 余额（分）
+  frozenBalance Int      @default(0) // 冻结余额（分）
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // 关联
+  boosterProfile   BoosterProfile?
+  ordersAsPlayer   Order[]         @relation("PlayerOrders")
+  ordersAsBooster  Order[]         @relation("BoosterOrders")
+  reviewsGiven     Review[]        @relation("ReviewsGiven")
+  reviewsReceived  Review[]        @relation("ReviewsReceived")
+  notifications    Notification[]
+  transactions     Transaction[]
+
+  @@index([openid])
+  @@index([phone])
+  @@index([role])
+}
+
+// 代练师资料
+model BoosterProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  realName        String
+  idCard          String
+  isVerified      Boolean  @default(false)
+  rating          Float    @default(5.0)
+  totalOrders     Int      @default(0)
+  completedOrders Int      @default(0)
+  games           String   @default("[]") // JSON array of game IDs
+  introduction    String   @default("")
+  certificates    String   @default("[]") // JSON array of image URLs
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isVerified])
+  @@index([rating])
+}
+
+// 游戏分类
+model GameCategory {
+  id          String   @id @default(cuid())
+  name        String
+  icon        String   @default("")
+  cover       String   @default("")
+  description String   @default("")
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联
+  servers    GameServer[]
+  boostTypes BoostType[]
+  orders     Order[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+// 游戏区服
+model GameServer {
+  id        String   @id @default(cuid())
+  gameId    String
+  name      String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  game   GameCategory @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([gameId])
+  @@index([isActive])
+}
+
+// 代练类型
+model BoostType {
+  id          String   @id @default(cuid())
+  gameId      String
+  name        String
+  description String   @default("")
+  basePrice   Int      @default(0) // 基础价格（分）
+  unit        String   @default("次") // 单位
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  game   GameCategory @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([gameId])
+  @@index([isActive])
+}
+
+// 订单表
+model Order {
+  id           String    @id @default(cuid())
+  orderNo      String    @unique
+  playerId     String
+  boosterId    String?
+  gameId       String
+  serverId     String
+  boostTypeId  String
+  
+  // 游戏账号信息（加密存储）
+  gameAccount  String
+  gamePassword String
+  gameRole     String    @default("")
+  
+  // 代练内容
+  currentLevel String
+  targetLevel  String
+  requirements String    @default("")
+  
+  // 价格（分）
+  price        Int
+  deposit      Int       @default(0)
+  commission   Int       @default(0) // 平台佣金
+  
+  // 状态
+  status       String    @default("PENDING") // PENDING, ACCEPTED, IN_PROGRESS, PAUSED, COMPLETED, CONFIRMING, CANCELLED, DISPUTED, REFUNDED
+  
+  // 时间
+  deadline     DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // 关联
+  player    User         @relation("PlayerOrders", fields: [playerId], references: [id])
+  booster   User?        @relation("BoosterOrders", fields: [boosterId], references: [id])
+  game      GameCategory @relation(fields: [gameId], references: [id])
+  server    GameServer   @relation(fields: [serverId], references: [id])
+  boostType BoostType    @relation(fields: [boostTypeId], references: [id])
+  
+  progresses   OrderProgress[]
+  reviews      Review[]
+  transactions Transaction[]
+
+  @@index([orderNo])
+  @@index([playerId])
+  @@index([boosterId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// 订单进度
+model OrderProgress {
+  id        String   @id @default(cuid())
+  orderId   String
+  content   String
+  images    String   @default("[]") // JSON array of image URLs
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+// 评价表
+model Review {
+  id          String   @id @default(cuid())
+  orderId     String
+  fromUserId  String
+  toUserId    String
+  rating      Int      // 1-5
+  content     String   @default("")
+  tags        String   @default("[]") // JSON array of tags
+  isAnonymous Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  order    Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromUser User  @relation("ReviewsGiven", fields: [fromUserId], references: [id])
+  toUser   User  @relation("ReviewsReceived", fields: [toUserId], references: [id])
+
+  @@index([orderId])
+  @@index([toUserId])
+  @@index([rating])
+}
+
+// 通知表
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // SYSTEM, ORDER, PAYMENT, REVIEW, PROMOTION
+  title     String
+  content   String
+  data      String   @default("{}") // JSON
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// 交易记录
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  orderId     String?
+  type        String   // RECHARGE, WITHDRAW, ORDER_PAY, ORDER_INCOME, REFUND, COMMISSION, FROZEN, UNFROZEN
+  amount      Int      // 金额（分），正数为收入，负数为支出
+  balance     Int      // 交易后余额
+  description String   @default("")
+  createdAt   DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// 系统配置
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 轮播图/广告位
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  image     String
+  link      String   @default("")
+  linkType  String   @default("none") // none, page, url
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  startTime DateTime?
+  endTime   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+

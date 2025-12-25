@@ -1,0 +1,61 @@
+.wechat-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0 8px;
+
+  &__icon-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  &__title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 12px;
+  }
+
+  &__desc {
+    font-size: 15px;
+    color: #8e8e93;
+    margin-bottom: 32px;
+  }
+
+  &__btn {
+    width: 100%;
+    height: 52px;
+    background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+    border: none;
+    border-radius: 26px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(7, 193, 96, 0.3);
+    transition: all 0.3s ease;
+
+    &::after {
+      border: none;
+    }
+
+    &:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(7, 193, 96, 0.3);
+    }
+
+    &[disabled] {
+      background: linear-gradient(135deg, #a5d6a7 0%, #81c784 100%);
+      box-shadow: none;
+    }
+  }
+}

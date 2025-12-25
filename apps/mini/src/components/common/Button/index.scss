@@ -1,0 +1,77 @@
+@import '@/styles/variables.scss';
+@import '@/styles/mixins.scss';
+
+.custom-button {
+  @include flex-center;
+  @include button-reset;
+  border-radius: 24px;
+  font-weight: 500;
+  transition: all 0.2s;
+  
+  // 类型
+  &--primary {
+    background: $primary-gradient;
+    color: #fff;
+  }
+  
+  &--secondary {
+    background: $bg-gray;
+    color: $text-primary;
+  }
+  
+  &--outline {
+    background: transparent;
+    border: 2px solid $primary-color;
+    color: $primary-color;
+  }
+  
+  &--text {
+    background: transparent;
+    color: $primary-color;
+  }
+  
+  // 尺寸
+  &--small {
+    height: 32px;
+    padding: 0 16px;
+    font-size: 13px;
+  }
+  
+  &--medium {
+    height: 44px;
+    padding: 0 24px;
+    font-size: 15px;
+  }
+  
+  &--large {
+    height: 50px;
+    padding: 0 32px;
+    font-size: 16px;
+  }
+  
+  // 状态
+  &--block {
+    width: 100%;
+  }
+  
+  &--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  
+  &--loading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  
+  .loading-icon {
+    margin-right: 8px;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+

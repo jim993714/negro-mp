@@ -1,0 +1,24 @@
+@import '@/styles/variables.scss';
+@import '@/styles/mixins.scss';
+
+.order-tabs {
+  display: flex;
+
+  &__item {
+    @include flex-column;
+    align-items: center;
+    flex: 1;
+    padding: 10px 0;
+
+    &__icon {
+      margin-bottom: 8px;
+      @include flex-center;
+    }
+
+    .text {
+      font-size: 12px;
+      color: $text-secondary;
+    }
+  }
+}
+

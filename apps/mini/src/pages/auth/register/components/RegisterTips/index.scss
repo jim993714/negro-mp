@@ -1,0 +1,16 @@
+@import '@/styles/variables.scss';
+
+.register-tips {
+  margin: 24px 0;
+  padding: 16px;
+  background: $bg-gray;
+  border-radius: $border-radius-md;
+
+  &__item {
+    display: block;
+    font-size: 12px;
+    color: $text-secondary;
+    line-height: 1.8;
+  }
+}
+

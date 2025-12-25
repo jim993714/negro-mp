@@ -1,0 +1,29 @@
+{
+  "name": "negro-mp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "游戏代练平台 - 微信小程序 + Next.js API",
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "dev:server": "pnpm --filter @negro/server dev",
+    "dev:mini": "pnpm --filter @negro/mini dev:weapp",
+    "build": "pnpm -r run build",
+    "build:server": "pnpm --filter @negro/server build",
+    "build:mini": "pnpm --filter @negro/mini build:weapp",
+    "db:generate": "pnpm --filter @negro/database generate",
+    "db:push": "pnpm --filter @negro/database push",
+    "db:migrate": "pnpm --filter @negro/database migrate",
+    "db:studio": "pnpm --filter @negro/database studio",
+    "lint": "pnpm -r run lint",
+    "clean": "pnpm -r run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}
+

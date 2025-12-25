@@ -1,0 +1,34 @@
+@import '@/styles/variables.scss';
+@import '@/styles/mixins.scss';
+
+.section-card {
+  @include card;
+  margin: $spacing-md $spacing-lg;
+  padding: 20px;
+
+  &__header {
+    @include flex-between;
+    margin-bottom: 20px;
+
+    .title {
+      font-size: 17px;
+      font-weight: 600;
+      color: $text-primary;
+    }
+
+    .more {
+      @include flex-align-center;
+
+      Text {
+        font-size: $font-size-sm;
+        color: $text-placeholder;
+      }
+
+      .arrow {
+        font-size: 16px;
+        margin-left: 4px;
+      }
+    }
+  }
+}
+

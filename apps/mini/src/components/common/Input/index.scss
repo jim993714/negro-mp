@@ -1,0 +1,58 @@
+@import '@/styles/variables.scss';
+@import '@/styles/mixins.scss';
+
+.custom-input {
+  @include flex-align-center;
+  height: 50px;
+  padding: 0 16px;
+  background: $bg-gray;
+  border-radius: $border-radius-md;
+  border: 2px solid transparent;
+  transition: all 0.3s;
+  
+  &:focus-within {
+    background: $bg-white;
+    border-color: $primary-color;
+  }
+  
+  &--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  &__prefix {
+    margin-right: 12px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  
+  &__inner {
+    flex: 1;
+    height: 100%;
+    font-size: 15px;
+    color: $text-primary;
+  }
+  
+  &__placeholder {
+    color: $text-placeholder;
+  }
+  
+  &__clear {
+    @include flex-center;
+    width: 24px;
+    height: 24px;
+    margin-left: 8px;
+    flex-shrink: 0;
+    
+    Text {
+      font-size: 14px;
+      color: $text-disabled;
+    }
+  }
+  
+  &__suffix {
+    margin-left: 12px;
+    flex-shrink: 0;
+  }
+}
+

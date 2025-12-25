@@ -1,0 +1,30 @@
+@import '@/styles/variables.scss';
+@import '@/styles/mixins.scss';
+
+.profile-page {
+  min-height: 100vh;
+  background: $bg-page;
+  @include safe-area-bottom;
+
+  // 顶部背景
+  &__bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 280px;
+    background: $primary-gradient;
+    border-radius: 0 0 40px 40px;
+  }
+
+  // 用户区域
+  &__user {
+    position: relative;
+    padding: 100px $spacing-lg $spacing-lg;
+  }
+
+  // 底部留白
+  &__bottom {
+    height: 20px;
+  }
+}

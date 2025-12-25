@@ -1,0 +1,101 @@
+@import '@/styles/variables.scss';
+@import '@/styles/mixins.scss';
+
+.settings-page {
+  min-height: 100vh;
+  background: $bg-page;
+  padding-top: calc(var(--status-bar-height, 0px) + 44px);
+  @include safe-area-bottom;
+
+  &__content {
+    padding: $spacing-md;
+  }
+
+  &__group {
+    background: $bg-white;
+    border-radius: $border-radius-lg;
+    margin-bottom: $spacing-md;
+    overflow: hidden;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-md $spacing-lg;
+    background: $bg-white;
+    border-bottom: 1px solid $border-color;
+    transition: background 0.2s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:active {
+      background: $bg-gray;
+    }
+  }
+
+  &__item-left {
+    display: flex;
+    align-items: center;
+    flex: 1;
+  }
+
+  &__item-icon {
+    width: 40px;
+    height: 40px;
+    @include flex-center;
+    margin-right: $spacing-md;
+  }
+
+  &__item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__item-label {
+    font-size: $font-size-lg;
+    color: $text-primary;
+    font-weight: 500;
+  }
+
+  &__item-value {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+  }
+
+  &__item-arrow {
+    margin-left: $spacing-sm;
+    @include flex-center;
+  }
+
+  &__logout {
+    margin-top: $spacing-xl;
+    padding: 0 $spacing-md;
+  }
+
+  &__logout-btn {
+    width: 100%;
+    height: 52px;
+    background: $bg-white;
+    border: 1px solid #ff3b30;
+    border-radius: $border-radius-md;
+    color: #ff3b30;
+    font-size: $font-size-lg;
+    font-weight: 600;
+    @include flex-center;
+
+    &::after {
+      border: none;
+    }
+
+    &:active {
+      background: rgba(255, 59, 48, 0.1);
+    }
+  }
+}
+
+

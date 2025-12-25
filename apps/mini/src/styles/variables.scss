@@ -1,0 +1,47 @@
+/**
+ * 全局样式变量
+ */
+
+// 主题色
+$primary-color: #667eea;
+$primary-gradient: linear-gradient(90deg, #667eea, #764ba2);
+$secondary-color: #764ba2;
+
+// 文字颜色
+$text-primary: #333333;
+$text-secondary: #666666;
+$text-placeholder: #999999;
+$text-disabled: #cccccc;
+
+// 背景色
+$bg-page: #f5f6fa;
+$bg-white: #ffffff;
+$bg-gray: #f8f9fa;
+
+// 边框
+$border-color: #eeeeee;
+$border-radius-sm: 8px;
+$border-radius-md: 12px;
+$border-radius-lg: 16px;
+$border-radius-xl: 24px;
+
+// 间距
+$spacing-xs: 8px;
+$spacing-sm: 12px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// 字体大小
+$font-size-xs: 12px;
+$font-size-sm: 13px;
+$font-size-md: 14px;
+$font-size-lg: 16px;
+$font-size-xl: 18px;
+$font-size-xxl: 20px;
+
+// 阴影
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+

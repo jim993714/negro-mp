@@ -1,0 +1,37 @@
+.login-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  background: #f8f9fa;
+  border-radius: 14px;
+  padding: 4px;
+
+  &__item {
+    flex: 1;
+    text-align: center;
+    padding: 10px 8px;
+    position: relative;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+
+    Text {
+      font-size: 13px;
+      color: #8e8e93;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    &--active {
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+      Text {
+        color: #667eea;
+        font-weight: 600;
+      }
+    }
+  }
+
+  &__indicator {
+    display: none;
+  }
+}

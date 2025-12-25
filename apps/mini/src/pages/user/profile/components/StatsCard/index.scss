@@ -1,0 +1,28 @@
+@import '@/styles/variables.scss';
+@import '@/styles/mixins.scss';
+
+.stats-card {
+  @include card;
+  display: flex;
+  margin-top: $spacing-md;
+  padding: 20px;
+
+  &__item {
+    @include flex-column;
+    align-items: center;
+    flex: 1;
+
+    .value {
+      font-size: 24px;
+      font-weight: 700;
+      color: $text-primary;
+    }
+
+    .label {
+      font-size: $font-size-sm;
+      color: $text-placeholder;
+      margin-top: 6px;
+    }
+  }
+}
+

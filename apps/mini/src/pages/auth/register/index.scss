@@ -1,0 +1,75 @@
+@import '@/styles/variables.scss';
+@import '@/styles/mixins.scss';
+
+.register-page {
+  min-height: 100vh;
+  background: $primary-gradient;
+  position: relative;
+  overflow: hidden;
+  padding: 0 32px;
+  box-sizing: border-box;
+
+  // 背景
+  &__bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+
+      &--1 { width: 250px; height: 250px; top: -80px; right: -60px; }
+      &--2 { width: 180px; height: 180px; bottom: 50px; left: -50px; }
+    }
+  }
+
+  // 标题
+  &__header {
+    padding-top: 100px;
+    padding-bottom: 30px;
+    position: relative;
+    z-index: 1;
+
+    .title {
+      display: block;
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  // 卡片
+  &__card {
+    @include card;
+    padding: 32px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  // 提交按钮
+  &__submit {
+    @include gradient-button;
+    width: 100%;
+    height: 48px;
+    font-size: 16px;
+  }
+
+  // 返回
+  &__back {
+    text-align: center;
+    margin-top: 20px;
+
+    Text {
+      font-size: 14px;
+      color: $primary-color;
+    }
+  }
+}

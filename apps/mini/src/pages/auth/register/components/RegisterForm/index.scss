@@ -1,0 +1,40 @@
+@import '@/styles/variables.scss';
+
+.register-form {
+  &__item {
+    margin-bottom: 20px;
+  }
+
+  &__label {
+    display: block;
+    font-size: 14px;
+    color: $text-primary;
+    font-weight: 500;
+    margin-bottom: 10px;
+
+    .optional {
+      font-size: 12px;
+      color: $text-placeholder;
+      font-weight: 400;
+    }
+  }
+
+  &__input {
+    width: 100%;
+    height: 48px;
+    background: $bg-gray;
+    border-radius: $border-radius-md;
+    padding: 0 16px;
+    font-size: 15px;
+    color: $text-primary;
+    box-sizing: border-box;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+
+    &:focus {
+      border-color: $primary-color;
+      background: $bg-white;
+    }
+  }
+}
+

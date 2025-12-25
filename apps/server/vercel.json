@@ -1,0 +1,13 @@
+{
+  "buildCommand": "pnpm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "regions": ["hkg1"],
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "JWT_SECRET": "@jwt_secret",
+    "WECHAT_APP_ID": "@wechat_app_id",
+    "WECHAT_APP_SECRET": "@wechat_app_secret"
+  }
+}
+

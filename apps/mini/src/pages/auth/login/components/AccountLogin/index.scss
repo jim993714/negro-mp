@@ -1,0 +1,98 @@
+.account-login {
+  padding: 8px 0;
+
+  &__input-group {
+    margin-bottom: 16px;
+  }
+
+  &__input {
+    display: flex;
+    align-items: center;
+    height: 52px;
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 0 16px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+
+    &:focus-within {
+      background: #fff;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+  }
+
+  &__input-icon {
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+  }
+
+  &__input-field {
+    flex: 1;
+    height: 100%;
+    font-size: 16px;
+    color: #1a1a2e;
+    background: transparent;
+  }
+
+  &__input-eye {
+    padding: 8px;
+    margin: -8px;
+    margin-left: 8px;
+    display: flex;
+    align-items: center;
+  }
+
+  &__btn {
+    width: 100%;
+    height: 52px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 26px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    margin-top: 12px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+
+    &::after {
+      border: none;
+    }
+
+    &:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    &[disabled] {
+      background: linear-gradient(135deg, #b39ddb 0%, #ce93d8 100%);
+      box-shadow: none;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 4px;
+  }
+
+  &__footer-text {
+    font-size: 15px;
+    color: #8e8e93;
+  }
+
+  &__footer-link {
+    font-size: 15px;
+    color: #667eea;
+    font-weight: 600;
+  }
+}
+
+.placeholder {
+  color: #c7c7cc;
+}
