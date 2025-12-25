@@ -12,12 +12,29 @@ export interface UserInfo {
   avatar: string
   phone?: string
   role: string
+  status?: string
+}
+
+// 注销信息
+export interface DeletionInfo {
+  isDeletionPending: boolean
+  deletionRequestedAt: string | null
+  deletionScheduledAt: string | null
+  daysRemaining: number | null
 }
 
 // 登录响应
 interface LoginResponse {
   token: string
   user: UserInfo
+  deletionInfo?: DeletionInfo | null
+}
+
+// 登录结果
+export interface LoginResult {
+  success: boolean
+  message?: string
+  deletionInfo?: DeletionInfo | null
 }
 
 /**
@@ -27,7 +44,7 @@ interface LoginResponse {
  * 2. 将 code 发送到后端
  * 3. 后端调用 auth.code2Session 换取 openid
  */
-export async function wechatLogin(): Promise<{ success: boolean; message?: string }> {
+export async function wechatLogin(): Promise<LoginResult> {
   try {
     // 1. 调用 wx.login 获取 code
     const loginRes = await Taro.login()
@@ -47,7 +64,10 @@ export async function wechatLogin(): Promise<{ success: boolean; message?: strin
     if (res.code === 0) {
       setToken(res.data.token)
       setUserInfo(res.data.user)
-      return { success: true }
+      return { 
+        success: true, 
+        deletionInfo: res.data.deletionInfo || null 
+      }
     }
 
     return { success: false, message: res.message || '登录失败' }
@@ -65,7 +85,7 @@ export async function wechatLogin(): Promise<{ success: boolean; message?: strin
 export async function phoneLogin(
   loginCode: string,
   phoneCode: string
-): Promise<{ success: boolean; message?: string }> {
+): Promise<LoginResult> {
   try {
     console.log('phoneLogin called with:', { loginCode, phoneCode })
     
@@ -79,7 +99,10 @@ export async function phoneLogin(
     if (res.code === 0) {
       setToken(res.data.token)
       setUserInfo(res.data.user)
-      return { success: true }
+      return { 
+        success: true,
+        deletionInfo: res.data.deletionInfo || null
+      }
     }
 
     return { success: false, message: res.message || '登录失败' }
@@ -95,7 +118,7 @@ export async function phoneLogin(
 export async function accountLogin(
   account: string,
   password: string
-): Promise<{ success: boolean; message?: string }> {
+): Promise<LoginResult> {
   const res = await post<LoginResponse>('/api/auth/login', {
     account,
     password,
@@ -104,7 +127,10 @@ export async function accountLogin(
   if (res.code === 0) {
     setToken(res.data.token)
     setUserInfo(res.data.user)
-    return { success: true }
+    return { 
+      success: true,
+      deletionInfo: res.data.deletionInfo || null
+    }
   }
 
   return { success: false, message: res.message }
@@ -138,5 +164,19 @@ export async function register(
  */
 export function logout(): void {
   clearAuth()
+}
+
+/**
+ * 取消账号注销
+ */
+export async function cancelDeletion(): Promise<{ success: boolean; message?: string }> {
+  const { del } = await import('./request')
+  const res = await del('/api/user/deletion')
+
+  if (res.code === 0) {
+    return { success: true }
+  }
+
+  return { success: false, message: res.message }
 }
 

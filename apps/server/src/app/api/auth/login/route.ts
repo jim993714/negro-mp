@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (result.message?.includes('密码')) {
       return error(ErrorCode.PASSWORD_WRONG, result.message)
     }
-    if (result.message?.includes('禁用')) {
+    if (result.message?.includes('禁用') || result.message?.includes('注销')) {
       return error(ErrorCode.ACCOUNT_DISABLED, result.message)
     }
 

@@ -12,7 +12,7 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 280px;
+    height: 320px;
     background: $primary-gradient;
     border-radius: 0 0 40px 40px;
   }
@@ -20,7 +20,7 @@
   // 用户区域
   &__user {
     position: relative;
-    padding: 100px $spacing-lg $spacing-lg;
+    padding: 0 $spacing-lg $spacing-lg;
   }
 
   // 底部留白

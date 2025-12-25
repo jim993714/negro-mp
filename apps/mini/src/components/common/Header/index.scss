@@ -1,0 +1,51 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+
+  &__left {
+    flex: 0 0 80rpx;
+    display: flex;
+    align-items: center;
+  }
+
+  &__back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60rpx;
+    height: 60rpx;
+    border-radius: 50%;
+    
+    &:active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  &__center {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  &__title {
+    font-size: 32rpx;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__right {
+    flex: 0 0 80rpx;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}
+

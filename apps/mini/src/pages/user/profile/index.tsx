@@ -4,7 +4,8 @@
 import { useState, useEffect } from 'react'
 import { View } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { isLoggedIn, getUserInfo } from '@/utils/storage'
+import { isLoggedIn, getUserInfo, setUserInfo as saveUserInfo } from '@/utils/storage'
+import { fetchUserProfile } from '@/services/user.service'
 import { TabBar } from '@/components'
 
 // 页面组件
@@ -44,20 +45,76 @@ const SERVICE_ITEMS = [
 export default function ProfilePage() {
   const [loggedIn, setLoggedIn] = useState(false)
   const [userInfo, setUserInfo] = useState<any>(null)
+  const [statusBarHeight, setStatusBarHeight] = useState(0)
+  const [loading, setLoading] = useState(false)
+  // 用于在状态切换时提供稳定的渲染key
+  const [renderKey, setRenderKey] = useState(0)
 
-  // 检查登录状态
-  const checkAuth = () => {
-    const logged = isLoggedIn()
-    setLoggedIn(logged)
-    setUserInfo(logged ? getUserInfo() : null)
+  // 从服务器获取最新用户信息
+  const fetchLatestUserInfo = async () => {
+    setLoading(true)
+    try {
+      console.log('[ProfilePage] 开始获取用户信息...')
+      const profile = await fetchUserProfile({ showError: false, updateLocal: true })
+      console.log('[ProfilePage] 获取到的profile:', profile)
+      
+      if (profile) {
+        setLoggedIn(true)
+        setUserInfo({
+          id: profile.id,
+          nickname: profile.nickname,
+          avatar: profile.avatar,
+          phone: profile.phone,
+          role: profile.role,
+          status: profile.status,
+        })
+      } else {
+        // 如果获取失败，使用本地数据
+        const localUser = getUserInfo()
+        console.log('[ProfilePage] profile为null，使用本地数据:', localUser)
+        if (localUser) {
+          setLoggedIn(true)
+          setUserInfo(localUser)
+        }
+      }
+    } catch (error) {
+      console.error('[ProfilePage] 获取用户信息失败:', error)
+      // 降级使用本地数据
+      const localUser = getUserInfo()
+      setLoggedIn(!!localUser)
+      setUserInfo(localUser)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
-    checkAuth()
+    // 获取状态栏高度
+    const windowInfo = Taro.getWindowInfo()
+    setStatusBarHeight(windowInfo.statusBarHeight || 0)
   }, [])
 
   useDidShow(() => {
-    checkAuth()
+    // 每次显示页面时，先快速检查本地状态
+    const logged = isLoggedIn()
+    const localUser = getUserInfo()
+    
+    console.log('[ProfilePage] useDidShow - logged:', logged, 'localUser:', localUser)
+    
+    // 如果登录状态发生变化，更新 renderKey 来强制重新创建子组件
+    // 这可以避免 Taro 事件监听器清理时的问题
+    if (logged !== loggedIn) {
+      setRenderKey(prev => prev + 1)
+    }
+    
+    // 更新状态
+    setLoggedIn(logged)
+    setUserInfo(logged ? localUser : null)
+    
+    // 如果已登录，从服务器获取最新数据
+    if (logged) {
+      fetchLatestUserInfo()
+    }
   })
 
   // 跳转登录
@@ -107,18 +164,27 @@ export default function ProfilePage() {
     })
   }
 
+  // 用户信息更新回调
+  const handleUserInfoUpdate = (newUserInfo: any) => {
+    setUserInfo(newUserInfo)
+    // 同步更新本地存储
+    saveUserInfo(newUserInfo)
+  }
+
   return (
     <View className='profile-page'>
       {/* 顶部背景 */}
       <View className='profile-page__bg' />
 
       {/* 用户信息 */}
-      <View className='profile-page__user'>
+      <View className='profile-page__user' style={{ paddingTop: `${statusBarHeight + 30}px` }}>
         <UserCard
+          key={`user-card-${renderKey}`}
           isLoggedIn={loggedIn}
           userInfo={userInfo}
           onLogin={goToLogin}
           onSettings={() => handleServiceClick('settings')}
+          onUserInfoUpdate={handleUserInfoUpdate}
         />
         <StatsCard items={STATS_ITEMS} onClick={handleStatsClick} />
       </View>

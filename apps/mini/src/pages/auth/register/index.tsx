@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { View, Text, Button } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import { NavBar } from '@/components'
 import { register } from '@/services/auth.service'
 import { isValidUsername, isValidPassword, isValidPhone } from '@/utils/index'
 
@@ -57,6 +58,9 @@ export default function RegisterPage() {
 
   return (
     <View className='register-page'>
+      {/* 导航栏 */}
+      <NavBar title='注册' backgroundColor='transparent' textColor='#fff' />
+
       {/* 背景 */}
       <View className='register-page__bg'>
         <View className='circle circle--1' />

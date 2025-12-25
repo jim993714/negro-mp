@@ -20,9 +20,18 @@ model User {
   phone         String?
   password      String?  // 密码（可选，用于账号密码登录）
   role          String   @default("PLAYER") // PLAYER, BOOSTER, ADMIN
-  status        String   @default("ACTIVE") // ACTIVE, BANNED, PENDING
+  status        String   @default("ACTIVE") // ACTIVE, BANNED, PENDING, DELETING, DELETED
   balance       Int      @default(0) // 余额（分）
   frozenBalance Int      @default(0) // 冻结余额（分）
+  
+  // Token 认证相关
+  token         String?  // 当前有效的token
+  tokenExpiredAt DateTime? // token过期时间
+  
+  // 账号注销相关
+  deletionRequestedAt DateTime? // 申请注销时间
+  deletionScheduledAt DateTime? // 计划注销时间（申请时间 + 7天）
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -38,6 +47,7 @@ model User {
   @@index([openid])
   @@index([phone])
   @@index([role])
+  @@index([status])
 }
 
 // 代练师资料

@@ -6,7 +6,8 @@ import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Icon, NavBar } from '@/components'
-import { wechatLogin, phoneLogin, accountLogin } from '@/services/auth.service'
+import { wechatLogin, phoneLogin, accountLogin, cancelDeletion } from '@/services/auth.service'
+import type { DeletionInfo } from '@/services/auth.service'
 import { isValidPassword } from '@/utils/index'
 
 // 页面组件
@@ -34,9 +35,39 @@ export default function LoginPage() {
   }
 
   // 登录成功后的处理
-  const onLoginSuccess = () => {
+  const onLoginSuccess = (deletionInfo?: DeletionInfo | null) => {
+    // 检查是否有注销流程
+    if (deletionInfo?.isDeletionPending) {
+      Taro.showModal({
+        title: '账号注销中',
+        content: `您的账号正在注销流程中，将在 ${deletionInfo.daysRemaining} 天后注销。是否取消注销？`,
+        confirmText: '取消注销',
+        cancelText: '继续登录',
+        confirmColor: '#667eea',
+        success: async (res) => {
+          if (res.confirm) {
+            // 取消注销
+            Taro.showLoading({ title: '处理中...' })
+            const result = await cancelDeletion()
+            Taro.hideLoading()
+            
+            if (result.success) {
+              Taro.showToast({ title: '已取消注销', icon: 'success' })
+              setTimeout(() => Taro.navigateBack(), 1500)
+            } else {
+              Taro.showToast({ title: result.message || '操作失败', icon: 'none' })
+            }
+          } else {
+            // 继续登录
+            Taro.showToast({ title: '登录成功', icon: 'success' })
+            setTimeout(() => Taro.navigateBack(), 1500)
+          }
+        },
+      })
+    } else {
     Taro.showToast({ title: '登录成功', icon: 'success' })
     setTimeout(() => Taro.navigateBack(), 1500)
+    }
   }
 
   // 微信授权登录
@@ -46,7 +77,7 @@ export default function LoginPage() {
     setLoading(false)
 
     if (result.success) {
-      onLoginSuccess()
+      onLoginSuccess(result.deletionInfo)
     } else {
       Taro.showToast({ title: result.message || '登录失败', icon: 'none' })
     }
@@ -82,7 +113,7 @@ export default function LoginPage() {
       const result = await phoneLogin(loginRes.code, code)
 
       if (result.success) {
-        onLoginSuccess()
+        onLoginSuccess(result.deletionInfo)
       } else {
         Taro.showToast({ title: result.message || '登录失败', icon: 'none' })
       }
@@ -103,7 +134,7 @@ export default function LoginPage() {
     setLoading(false)
 
     if (result.success) {
-      onLoginSuccess()
+      onLoginSuccess(result.deletionInfo)
     } else {
       Taro.showToast({ title: result.message || '登录失败', icon: 'none' })
     }
@@ -113,9 +144,6 @@ export default function LoginPage() {
   const goToRegister = () => {
     Taro.navigateTo({ url: '/pages/auth/register/index' })
   }
-
-  const statusBarHeight = Taro.getSystemInfoSync().statusBarHeight || 0
-  const navBarHeight = 44
 
   return (
     <View className='login-page'>
@@ -130,10 +158,7 @@ export default function LoginPage() {
       </View>
 
       {/* Logo */}
-      <View 
-        className='login-page__header'
-        style={{ paddingTop: `${statusBarHeight + navBarHeight + 40}px` }}
-      >
+      <View className='login-page__header'>
         <View className='logo'>
           <Icon name='gamepad' size={48} color='#fff' />
         </View>

@@ -10,7 +10,7 @@
  * 5. 生成 JWT token 返回给前端
  */
 import { prisma } from '@negro/database'
-import { generateToken } from '@/lib/auth'
+import { signTokenAndSave } from '@/lib/auth'
 import { generateDefaultAvatar } from '@/lib/avatar'
 import {
   success,
@@ -128,18 +128,39 @@ if (!user) {
       console.log('[微信登录] 创建新用户:', user.id)
     } else {
         console.log('[微信登录] 用户已存在:', user.id)
+        
+        // 检查账号是否已被注销
+        if (user.status === 'DELETED') {
+          return error(ErrorCode.ACCOUNT_DISABLED, '该账号已被注销')
+        }
       }
     } catch (dbError) {
       console.error('[微信登录] 数据库操作失败:', dbError)
       return error(ErrorCode.DB_ERROR, '用户数据处理失败，请稍后重试')
     }
 
-    // 生成 JWT token
-    const token = generateToken({
+    // 生成 JWT token 并保存到数据库
+    const { token } = await signTokenAndSave({
       userId: user.id,
       openid: user.openid,
       role: user.role,
     })
+
+    // 检查是否在注销流程中
+    let deletionInfo = null
+    if (user.status === 'DELETING' && user.deletionScheduledAt) {
+      const now = new Date()
+      const scheduledAt = new Date(user.deletionScheduledAt)
+      const diffTime = scheduledAt.getTime() - now.getTime()
+      const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      
+      deletionInfo = {
+        isDeletionPending: true,
+        deletionRequestedAt: user.deletionRequestedAt,
+        deletionScheduledAt: user.deletionScheduledAt,
+        daysRemaining: Math.max(0, daysRemaining),
+      }
+    }
 
     return success(
       {
@@ -150,7 +171,9 @@ if (!user) {
           avatar: user.avatar,
           phone: user.phone,
           role: user.role,
+          status: user.status,
         },
+        deletionInfo,
       },
       '登录成功'
     )

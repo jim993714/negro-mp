@@ -14,6 +14,15 @@ export interface UserResponse {
   avatar: string
   phone: string | null
   role: string
+  status: string
+}
+
+// 注销信息
+export interface DeletionInfo {
+  isDeletionPending: boolean
+  deletionRequestedAt: Date | null
+  deletionScheduledAt: Date | null
+  daysRemaining: number | null
 }
 
 // 登录结果
@@ -23,6 +32,7 @@ export interface AuthResult {
   data?: {
     token: string
     user: UserResponse
+    deletionInfo: DeletionInfo | null
   }
 }
 
@@ -43,6 +53,28 @@ function formatUser(user: any): UserResponse {
     avatar: user.avatar,
     phone: user.phone,
     role: user.role,
+    status: user.status,
+  }
+}
+
+/**
+ * 获取注销信息
+ */
+function getDeletionInfo(user: any): DeletionInfo | null {
+  if (user.status !== 'DELETING' || !user.deletionScheduledAt) {
+    return null
+  }
+
+  const now = new Date()
+  const scheduledAt = new Date(user.deletionScheduledAt)
+  const diffTime = scheduledAt.getTime() - now.getTime()
+  const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  return {
+    isDeletionPending: true,
+    deletionRequestedAt: user.deletionRequestedAt,
+    deletionScheduledAt: user.deletionScheduledAt,
+    daysRemaining: Math.max(0, daysRemaining),
   }
 }
 
@@ -68,6 +100,10 @@ export async function loginWithPassword(account: string, password: string): Prom
     return { success: false, message: '账号已被禁用' }
   }
 
+  if (user.status === 'DELETED') {
+    return { success: false, message: '账号已被注销' }
+  }
+
   if (!user.password) {
     return { success: false, message: '该账号未设置密码，请使用手机号登录' }
   }
@@ -81,7 +117,11 @@ export async function loginWithPassword(account: string, password: string): Prom
 
   return {
     success: true,
-    data: { token, user: formatUser(user) },
+    data: { 
+      token, 
+      user: formatUser(user),
+      deletionInfo: getDeletionInfo(user),
+    },
   }
 }
 
@@ -135,11 +175,19 @@ export async function loginWithPhone(
     return { success: false, message: '账号已被禁用' }
   }
 
+  if (user.status === 'DELETED') {
+    return { success: false, message: '账号已被注销' }
+  }
+
   const token = await signToken({ userId: user.id, role: user.role })
 
   return {
     success: true,
-    data: { token, user: formatUser(user) },
+    data: { 
+      token, 
+      user: formatUser(user),
+      deletionInfo: getDeletionInfo(user),
+    },
   }
 }
 
@@ -187,7 +235,11 @@ export async function register(
 
   return {
     success: true,
-    data: { token, user: formatUser(user) },
+    data: { 
+      token, 
+      user: formatUser(user),
+      deletionInfo: null, // 新注册用户没有注销信息
+    },
   }
 }
 

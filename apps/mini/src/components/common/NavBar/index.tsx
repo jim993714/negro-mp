@@ -1,19 +1,30 @@
 /**
- * 自定义导航栏组件
- * 用于小程序自定义导航栏
+ * 导航栏组件（组合版本）
+ * @description SafeArea + Header 的组合，fixed 定位覆盖状态栏
  */
-import { View, Text } from '@tarojs/components'
+import { useState, useEffect } from 'react'
+import { View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { Icon } from '@/components'
-import './index.scss'
+import SafeArea from '../SafeArea'
+import Header from '../Header'
 
 interface NavBarProps {
+  /** 标题 */
   title?: string
+  /** 是否显示返回按钮 */
   showBack?: boolean
+  /** 背景色 */
   backgroundColor?: string
+  /** 文字颜色 */
   textColor?: string
+  /** 返回按钮点击回调 */
   onBack?: () => void
+  /** 右侧内容 */
+  renderRight?: React.ReactNode
 }
+
+// Header 高度 80rpx = 40px
+const HEADER_HEIGHT = 40
 
 export default function NavBar({
   title = '',
@@ -21,45 +32,32 @@ export default function NavBar({
   backgroundColor = '#667eea',
   textColor = '#fff',
   onBack,
+  renderRight,
 }: NavBarProps) {
-  const statusBarHeight = Taro.getSystemInfoSync().statusBarHeight || 0
-  const navBarHeight = 44 // 导航栏高度
+  const [statusBarHeight, setStatusBarHeight] = useState(0)
 
-  const handleBack = () => {
-    if (onBack) {
-      onBack()
-    } else {
-      const pages = Taro.getCurrentPages()
-      if (pages.length > 1) {
-        Taro.navigateBack()
-      } else {
-        Taro.switchTab({ url: '/pages/home/index' })
-      }
-    }
-  }
+  useEffect(() => {
+    const windowInfo = Taro.getWindowInfo()
+    setStatusBarHeight(windowInfo.statusBarHeight || 0)
+  }, [])
+
+  // 总高度 = 状态栏 + Header
+  const totalHeight = statusBarHeight + HEADER_HEIGHT
 
   return (
-    <View
-      className='nav-bar'
-      style={{
-        paddingTop: `${statusBarHeight}px`,
-        backgroundColor,
-        color: textColor,
-      }}
-    >
-      <View className='nav-bar__content' style={{ height: `${navBarHeight}px` }}>
-        {showBack && (
-          <View className='nav-bar__back' onClick={handleBack}>
-            <Icon name='arrowLeft' size={20} color={textColor} />
-          </View>
-        )}
-        {title && (
-          <Text className='nav-bar__title' style={{ color: textColor }}>
-            {title}
-          </Text>
-        )}
-      </View>
-    </View>
+    <>
+      {/* 固定定位的导航栏 */}
+      <SafeArea backgroundColor={backgroundColor}>
+        <Header
+          title={title}
+          showBack={showBack}
+          textColor={textColor}
+          onBack={onBack}
+          renderRight={renderRight}
+        />
+      </SafeArea>
+      {/* 占位元素，防止内容被遮挡 */}
+      <View style={{ height: `${totalHeight}px` }} />
+    </>
   )
 }
-

@@ -7,6 +7,14 @@ import { getToken, clearAuth } from '@/utils/storage'
 // API 基础地址
 const BASE_URL = process.env.TARO_APP_API_URL || 'http://localhost:3000'
 
+// 错误码定义（与后端保持一致）
+const ErrorCode = {
+  UNAUTHORIZED: 3001,         // 未登录
+  TOKEN_EXPIRED: 3002,        // token 过期
+  TOKEN_INVALID: 3003,        // token 无效
+  ACCOUNT_DISABLED: 2004,     // 账号已禁用/已注销
+}
+
 // 响应类型
 interface ApiResponse<T = any> {
   code: number
@@ -22,6 +30,33 @@ interface RequestConfig {
   header?: Record<string, string>
   showLoading?: boolean
   showError?: boolean
+  skipAuthRedirect?: boolean // 跳过自动跳转登录
+}
+
+// 是否正在跳转登录（防止重复跳转）
+let isRedirectingToLogin = false
+
+/**
+ * 跳转到登录页
+ */
+function redirectToLogin(message?: string) {
+  if (isRedirectingToLogin) return
+  
+  isRedirectingToLogin = true
+  clearAuth()
+  
+  if (message) {
+    Taro.showToast({ title: message, icon: 'none' })
+  }
+  
+  setTimeout(() => {
+    Taro.navigateTo({ 
+      url: '/pages/auth/login/index',
+      complete: () => {
+        isRedirectingToLogin = false
+      }
+    })
+  }, message ? 1500 : 0)
 }
 
 /**
@@ -35,6 +70,7 @@ export async function request<T = any>(config: RequestConfig): Promise<ApiRespon
     header = {},
     showLoading = false,
     showError = true,
+    skipAuthRedirect = false,
   } = config
 
   // 显示 loading
@@ -63,10 +99,28 @@ export async function request<T = any>(config: RequestConfig): Promise<ApiRespon
 
     // 处理业务错误
     if (result.code !== 0) {
-      // 未授权，跳转登录
-      if (result.code === 401) {
-        clearAuth()
-        Taro.navigateTo({ url: '/pages/auth/login/index' })
+      // 处理认证相关错误
+      if (!skipAuthRedirect) {
+        switch (result.code) {
+          case ErrorCode.UNAUTHORIZED:
+          case ErrorCode.TOKEN_INVALID:
+            redirectToLogin('请先登录')
+            return result
+          
+          case ErrorCode.TOKEN_EXPIRED:
+            redirectToLogin('登录已过期，请重新登录')
+            return result
+          
+          case ErrorCode.ACCOUNT_DISABLED:
+            redirectToLogin(result.message || '账号异常，请重新登录')
+            return result
+        }
+      }
+      
+      // HTTP 401 错误
+      if (response.statusCode === 401 && !skipAuthRedirect) {
+        redirectToLogin('请先登录')
+        return result
       }
       
       if (showError) {

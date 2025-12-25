@@ -167,6 +167,28 @@ export function paramInvalid(paramName: string, reason?: string): NextResponse<A
   return error(ErrorCode.PARAM_INVALID, msg)
 }
 
+/**
+ * 未授权错误
+ */
+export function unauthorized(message?: string): NextResponse<ApiResponse<null>> {
+  return error(ErrorCode.UNAUTHORIZED, message || '请先登录')
+}
+
+/**
+ * 验证错误
+ */
+export function validationError(message: string, errors?: any): NextResponse<ApiResponse<null>> {
+  return NextResponse.json(
+    {
+      code: ErrorCode.PARAM_INVALID,
+      message,
+      data: errors || null,
+      timestamp: Date.now(),
+    },
+    { status: 400 }
+  )
+}
+
 // ============ 微信错误码映射 ============
 
 /**

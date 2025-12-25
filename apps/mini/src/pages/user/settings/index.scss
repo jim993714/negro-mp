@@ -4,7 +4,6 @@
 .settings-page {
   min-height: 100vh;
   background: $bg-page;
-  padding-top: calc(var(--status-bar-height, 0px) + 44px);
   @include safe-area-bottom;
 
   &__content {
@@ -70,6 +69,16 @@
   &__item-arrow {
     margin-left: $spacing-sm;
     @include flex-center;
+  }
+
+  &__item--danger {
+    .settings-page__item-label--danger {
+      color: #ff3b30;
+    }
+  }
+
+  &__item-label--danger {
+    color: #ff3b30;
   }
 
   &__logout {
