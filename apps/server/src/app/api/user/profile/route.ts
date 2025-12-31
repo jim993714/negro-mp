@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@negro/database';
-import { getUserFromRequest, validateTokenFromRequest } from '@/lib/auth';
+import { getUserFromRequest, validateTokenFromRequest, checkAuthWithDeletion } from '@/lib/auth';
 import { updateUserSchema } from '@/lib/validators';
-import { success, error, unauthorized, validationError, ErrorCode } from '@/lib/response';
+import { success, error, unauthorized, validationError, ErrorCode, accountDeleting } from '@/lib/response';
 
 /**
  * 获取用户信息
@@ -30,6 +30,9 @@ export async function GET(request: NextRequest) {
           return error(ErrorCode.ACCOUNT_DISABLED, '账号已被禁用');
         case 'USER_NOT_FOUND':
           return error(ErrorCode.USER_NOT_FOUND, '用户不存在');
+        case 'ACCOUNT_DELETING':
+          // 账号注销中，返回特定错误码和注销信息
+          return accountDeleting(result.deletionInfo!);
         default:
           return unauthorized();
       }
@@ -78,7 +81,11 @@ export async function GET(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request);
+    const { user, response } = await checkAuthWithDeletion(request);
+    
+    if (response) {
+      return response;
+    }
     
     if (!user) {
       return unauthorized();

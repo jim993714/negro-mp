@@ -13,6 +13,7 @@ const ErrorCode = {
   TOKEN_EXPIRED: 3002,        // token 过期
   TOKEN_INVALID: 3003,        // token 无效
   ACCOUNT_DISABLED: 2004,     // 账号已禁用/已注销
+  ACCOUNT_DELETING: 2005,     // 账号注销中
 }
 
 // 响应类型
@@ -35,6 +36,8 @@ interface RequestConfig {
 
 // 是否正在跳转登录（防止重复跳转）
 let isRedirectingToLogin = false
+// 是否正在显示注销弹窗（防止重复弹窗）
+let isShowingDeletionModal = false
 
 /**
  * 跳转到登录页
@@ -57,6 +60,67 @@ function redirectToLogin(message?: string) {
       }
     })
   }, message ? 1500 : 0)
+}
+
+/**
+ * 处理账号注销中的情况
+ * @returns Promise<boolean> - true 表示用户选择取消注销并成功，可以重试请求
+ */
+async function handleAccountDeleting(data: { daysRemaining: number }): Promise<boolean> {
+  if (isShowingDeletionModal) return false
+  
+  isShowingDeletionModal = true
+  
+  return new Promise((resolve) => {
+    Taro.showModal({
+      title: '账号注销中',
+      content: `您的账号正在注销流程中，将在 ${data.daysRemaining} 天后注销。\n\n确认继续使用将自动取消注销申请，账号恢复正常使用。`,
+      confirmText: '继续使用',
+      cancelText: '暂不使用',
+      confirmColor: '#667eea',
+      success: async (res) => {
+        isShowingDeletionModal = false
+        
+        if (res.confirm) {
+          // 用户选择继续使用，取消注销
+          Taro.showLoading({ title: '处理中...' })
+          try {
+            const cancelRes = await Taro.request({
+              url: `${BASE_URL}/api/user/deletion`,
+              method: 'DELETE',
+              header: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`,
+              },
+            })
+            
+            Taro.hideLoading()
+            
+            if (cancelRes.data?.code === 0) {
+              Taro.showToast({ title: '已取消注销', icon: 'success' })
+              resolve(true) // 取消成功，可以重试请求
+            } else {
+              Taro.showToast({ title: cancelRes.data?.message || '操作失败', icon: 'none' })
+              resolve(false)
+            }
+          } catch (err) {
+            Taro.hideLoading()
+            Taro.showToast({ title: '操作失败', icon: 'none' })
+            resolve(false)
+          }
+        } else {
+          // 用户选择暂不使用，清除登录状态
+          clearAuth()
+          Taro.showToast({ title: '已退出登录', icon: 'none' })
+          resolve(false)
+        }
+      },
+      fail: () => {
+        isShowingDeletionModal = false
+        resolve(false)
+      }
+    })
+  })
 }
 
 /**
@@ -113,6 +177,15 @@ export async function request<T = any>(config: RequestConfig): Promise<ApiRespon
           
           case ErrorCode.ACCOUNT_DISABLED:
             redirectToLogin(result.message || '账号异常，请重新登录')
+            return result
+          
+          case ErrorCode.ACCOUNT_DELETING:
+            // 账号注销中，显示弹窗让用户选择
+            const shouldRetry = await handleAccountDeleting(result.data || { daysRemaining: 7 })
+            if (shouldRetry) {
+              // 用户选择取消注销成功，重试原请求
+              return request(config)
+            }
             return result
         }
       }

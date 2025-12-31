@@ -156,13 +156,17 @@ export default function SettingsPage() {
             Taro.hideLoading()
 
             if (result.code === 0) {
+              // 清除登录状态
+              clearAuth()
+              
               Taro.showModal({
                 title: '注销申请已提交',
-                content: '您的账号将在7天后注销。期间登录可随时取消注销。',
+                content: '您的账号将在7天后注销。期间重新登录可随时取消注销。',
                 showCancel: false,
                 confirmText: '我知道了',
                 success: () => {
-                  fetchDeletionStatus()
+                  // 跳转到首页
+                  Taro.switchTab({ url: '/pages/home/index' })
                 },
               })
             } else {

@@ -35,38 +35,39 @@ export default function LoginPage() {
   }
 
   // 登录成功后的处理
-  const onLoginSuccess = (deletionInfo?: DeletionInfo | null) => {
+  const onLoginSuccess = async (deletionInfo?: DeletionInfo | null) => {
     // 检查是否有注销流程
     if (deletionInfo?.isDeletionPending) {
       Taro.showModal({
         title: '账号注销中',
-        content: `您的账号正在注销流程中，将在 ${deletionInfo.daysRemaining} 天后注销。是否取消注销？`,
-        confirmText: '取消注销',
-        cancelText: '继续登录',
+        content: `您的账号正在注销流程中，将在 ${deletionInfo.daysRemaining} 天后注销。\n\n确认登录将自动取消注销申请，账号恢复正常使用。`,
+        confirmText: '确认登录',
+        cancelText: '暂不登录',
         confirmColor: '#667eea',
         success: async (res) => {
           if (res.confirm) {
-            // 取消注销
+            // 确认登录 = 取消注销
             Taro.showLoading({ title: '处理中...' })
             const result = await cancelDeletion()
             Taro.hideLoading()
             
             if (result.success) {
-              Taro.showToast({ title: '已取消注销', icon: 'success' })
+              Taro.showToast({ title: '登录成功，已取消注销', icon: 'success' })
               setTimeout(() => Taro.navigateBack(), 1500)
             } else {
               Taro.showToast({ title: result.message || '操作失败', icon: 'none' })
             }
           } else {
-            // 继续登录
-            Taro.showToast({ title: '登录成功', icon: 'success' })
-            setTimeout(() => Taro.navigateBack(), 1500)
+            // 暂不登录，清除刚保存的登录状态
+            const { clearAuth } = await import('@/utils/storage')
+            clearAuth()
+            Taro.showToast({ title: '已取消登录', icon: 'none' })
           }
         },
       })
     } else {
-    Taro.showToast({ title: '登录成功', icon: 'success' })
-    setTimeout(() => Taro.navigateBack(), 1500)
+      Taro.showToast({ title: '登录成功', icon: 'success' })
+      setTimeout(() => Taro.navigateBack(), 1500)
     }
   }
 

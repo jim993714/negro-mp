@@ -4,7 +4,7 @@
  */
 import { NextRequest } from 'next/server';
 import { prisma } from '@negro/database';
-import { getUserFromRequest } from '@/lib/auth';
+import { checkAuthWithDeletion } from '@/lib/auth';
 import { success, error, unauthorized } from '@/lib/response';
 import { generateDefaultAvatar } from '@/lib/avatar';
 
@@ -18,7 +18,11 @@ const MAX_SIZE = 5 * 1024 * 1024; // 5MB
  */
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request);
+    const { user, response } = await checkAuthWithDeletion(request);
+    
+    if (response) {
+      return response;
+    }
     
     if (!user) {
       return unauthorized();

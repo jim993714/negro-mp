@@ -82,15 +82,65 @@ export function verifyToken(token: string): JWTPayload | null {
 export interface TokenValidationResult {
   valid: boolean;
   user: any | null;
-  error?: 'NO_TOKEN' | 'INVALID_TOKEN' | 'TOKEN_EXPIRED' | 'TOKEN_MISMATCH' | 'USER_NOT_FOUND' | 'ACCOUNT_DELETED' | 'ACCOUNT_BANNED';
+  error?: 'NO_TOKEN' | 'INVALID_TOKEN' | 'TOKEN_EXPIRED' | 'TOKEN_MISMATCH' | 'USER_NOT_FOUND' | 'ACCOUNT_DELETED' | 'ACCOUNT_BANNED' | 'ACCOUNT_DELETING';
+  deletionInfo?: {
+    daysRemaining: number;
+    deletionScheduledAt: Date | null;
+  };
 }
 
 /**
  * 从请求中获取用户信息（增强版，验证数据库token）
+ * 注意：DELETING 状态会返回 null，如需获取完整验证结果，请使用 validateTokenFromRequest
  */
 export async function getUserFromRequest(request: NextRequest) {
   const result = await validateTokenFromRequest(request);
   return result.valid ? result.user : null;
+}
+
+/**
+ * 验证 token 并检查注销状态
+ * 如果用户在注销中，返回 accountDeleting 响应
+ * 否则返回 null（表示验证通过）或 unauthorized 响应
+ */
+export async function checkAuthWithDeletion(request: NextRequest): Promise<{
+  user: any | null;
+  response: Response | null;
+}> {
+  const { accountDeleting, unauthorized, error } = await import('./response');
+  const result = await validateTokenFromRequest(request);
+  
+  if (result.error === 'ACCOUNT_DELETING' && result.deletionInfo) {
+    return {
+      user: result.user,
+      response: accountDeleting(result.deletionInfo),
+    };
+  }
+  
+  if (!result.valid) {
+    let response: Response;
+    switch (result.error) {
+      case 'NO_TOKEN':
+      case 'INVALID_TOKEN':
+      case 'TOKEN_MISMATCH':
+        response = unauthorized('请先登录');
+        break;
+      case 'TOKEN_EXPIRED':
+        response = error(3002, '登录已过期，请重新登录');
+        break;
+      case 'ACCOUNT_DELETED':
+        response = error(2004, '账号已被注销');
+        break;
+      case 'ACCOUNT_BANNED':
+        response = error(2004, '账号已被禁用');
+        break;
+      default:
+        response = unauthorized();
+    }
+    return { user: null, response };
+  }
+  
+  return { user: result.user, response: null };
 }
 
 /**
@@ -126,6 +176,24 @@ export async function validateTokenFromRequest(request: NextRequest): Promise<To
   
   if (user.status === 'BANNED') {
     return { valid: false, user: null, error: 'ACCOUNT_BANNED' };
+  }
+  
+  // 检查是否在注销流程中
+  if (user.status === 'DELETING' && user.deletionScheduledAt) {
+    const now = new Date();
+    const scheduledAt = new Date(user.deletionScheduledAt);
+    const diffTime = scheduledAt.getTime() - now.getTime();
+    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return { 
+      valid: false, 
+      user, 
+      error: 'ACCOUNT_DELETING',
+      deletionInfo: {
+        daysRemaining: Math.max(0, daysRemaining),
+        deletionScheduledAt: user.deletionScheduledAt,
+      }
+    };
   }
   
   // 验证数据库中的token是否匹配

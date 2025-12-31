@@ -17,12 +17,6 @@ importers:
       '@babel/runtime':
         specifier: ^7.23.7
         version: 7.28.4
-      '@icon-park/react':
-        specifier: ^1.1.2
-        version: 1.4.2(react-dom@18.3.1)(react@18.3.1)
-      '@icon-park/svg':
-        specifier: ^1.1.2
-        version: 1.4.2
       '@negro/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -2044,22 +2038,6 @@ packages:
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
     deprecated: Use @eslint/object-schema instead
     dev: true
-
-  /@icon-park/react@1.4.2(react-dom@18.3.1)(react@18.3.1):
-    resolution: {integrity: sha512-+MtQLjNiRuia3fC/NfpSCTIy5KH5b+NkMB9zYd7p3R4aAIK61AjK0OSraaICJdkKooU9jpzk8m0fY4g9A3JqhQ==}
-    engines: {node: '>= 8.0.0', npm: '>= 5.0.0'}
-    peerDependencies:
-      react: '>=16.9'
-      react-dom: '>=16.9'
-    dependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-    dev: false
-
-  /@icon-park/svg@1.4.2:
-    resolution: {integrity: sha512-1X0DA+1e0R0liYvw+Nb2BQmF1oEo/wS3o/JYkQYifPJXCGYij2vN9sJf/NNhbzDsJWTg4W2bbzZjJvC7Q4w4oQ==}
-    engines: {node: '>= 8.0.0', npm: '>= 5.0.0'}
-    dev: false
 
   /@inquirer/external-editor@1.0.3:
     resolution: {integrity: sha512-RWbSrDiYmO4LbejWY7ttpxczuwQyZLBUyygsA9Nsv95hpzUWwnNTVQmAq3xuh7vNwCp07UTmE5i11XAEExx4RA==}

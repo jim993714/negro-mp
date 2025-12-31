@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@negro/database';
-import { getUserFromRequest } from '@/lib/auth';
+import { checkAuthWithDeletion } from '@/lib/auth';
 import { orderProgressSchema } from '@/lib/validators';
 import { success, error, unauthorized, notFound, forbidden, validationError } from '@/lib/response';
 
@@ -13,7 +13,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getUserFromRequest(request);
+    const { user, response } = await checkAuthWithDeletion(request);
+    
+    if (response) {
+      return response;
+    }
     
     if (!user) {
       return unauthorized();
@@ -57,7 +61,11 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getUserFromRequest(request);
+    const { user, response } = await checkAuthWithDeletion(request);
+    
+    if (response) {
+      return response;
+    }
     
     if (!user) {
       return unauthorized();

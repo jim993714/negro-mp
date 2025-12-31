@@ -9,8 +9,8 @@
  */
 import { NextRequest } from 'next/server';
 import { prisma } from '@negro/database';
-import { getUserFromRequest } from '@/lib/auth';
-import { success, error, unauthorized } from '@/lib/response';
+import { validateTokenFromRequest } from '@/lib/auth';
+import { success, error, unauthorized, ErrorCode } from '@/lib/response';
 
 // 注销冷静期天数
 const DELETION_COOLING_DAYS = 7;
@@ -18,12 +18,16 @@ const DELETION_COOLING_DAYS = 7;
 /**
  * 获取注销状态
  * GET /api/user/deletion
+ * 注意：此接口允许 DELETING 状态的用户访问
  */
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request);
+    const result = await validateTokenFromRequest(request);
     
-    if (!user) {
+    // 对于 DELETING 状态，仍然允许访问此接口
+    const user = result.user;
+    
+    if (!user && result.error !== 'ACCOUNT_DELETING') {
       return unauthorized();
     }
     
@@ -63,7 +67,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request);
+    const result = await validateTokenFromRequest(request);
+    const user = result.user;
     
     if (!user) {
       return unauthorized();
@@ -132,12 +137,16 @@ export async function POST(request: NextRequest) {
 /**
  * 取消注销
  * DELETE /api/user/deletion
+ * 注意：此接口允许 DELETING 状态的用户访问
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request);
+    const result = await validateTokenFromRequest(request);
     
-    if (!user) {
+    // 对于 DELETING 状态，仍然允许访问此接口
+    const user = result.user;
+    
+    if (!user && result.error !== 'ACCOUNT_DELETING') {
       return unauthorized();
     }
     

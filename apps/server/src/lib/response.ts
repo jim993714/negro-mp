@@ -28,6 +28,7 @@ export const ErrorCode = {
   USER_EXISTS: 2002,          // 用户已存在
   PASSWORD_WRONG: 2003,       // 密码错误
   ACCOUNT_DISABLED: 2004,     // 账号已禁用
+  ACCOUNT_DELETING: 2005,     // 账号注销中
   ORDER_NOT_FOUND: 2010,      // 订单不存在
   ORDER_STATUS_ERROR: 2011,   // 订单状态错误
   BALANCE_NOT_ENOUGH: 2020,   // 余额不足
@@ -68,6 +69,7 @@ export const ErrorMessage: Record<number, string> = {
   [ErrorCode.USER_EXISTS]: '用户已存在',
   [ErrorCode.PASSWORD_WRONG]: '密码错误',
   [ErrorCode.ACCOUNT_DISABLED]: '账号已被禁用',
+  [ErrorCode.ACCOUNT_DELETING]: '账号注销中',
   [ErrorCode.ORDER_NOT_FOUND]: '订单不存在',
   [ErrorCode.ORDER_STATUS_ERROR]: '订单状态异常',
   [ErrorCode.BALANCE_NOT_ENOUGH]: '余额不足',
@@ -172,6 +174,24 @@ export function paramInvalid(paramName: string, reason?: string): NextResponse<A
  */
 export function unauthorized(message?: string): NextResponse<ApiResponse<null>> {
   return error(ErrorCode.UNAUTHORIZED, message || '请先登录')
+}
+
+/**
+ * 账号注销中错误（返回注销信息）
+ */
+export function accountDeleting(deletionInfo: {
+  daysRemaining: number
+  deletionScheduledAt: Date | null
+}): NextResponse<ApiResponse<typeof deletionInfo>> {
+  return NextResponse.json(
+    {
+      code: ErrorCode.ACCOUNT_DELETING,
+      message: '账号注销中',
+      data: deletionInfo,
+      timestamp: Date.now(),
+    },
+    { status: 200 } // 使用 200 状态码，因为这不是真正的错误，只是需要用户确认
+  )
 }
 
 /**
